@@ -1,0 +1,116 @@
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { SavedWorkoutsService, SavedWorkout } from '../../core/services/saved-workouts.service';
+
+@Component({
+  selector: 'app-saved-workouts',
+  imports: [TableModule, ButtonModule, CardModule, DatePipe],
+  template: `
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0">Saved Workouts</h2>
+      </div>
+
+      <p-card class="rounded-xl shadow-sm">
+        <p-table
+          [value]="savedWorkouts()"
+          [loading]="loading()"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} saved workouts"
+          styleClass="p-datatable-striped"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="workoutName">
+                Workout Name <p-sortIcon field="workoutName" />
+              </th>
+              <th pSortableColumn="userId">
+                User ID <p-sortIcon field="userId" />
+              </th>
+              <th>Notes</th>
+              <th pSortableColumn="savedAt">
+                Saved At <p-sortIcon field="savedAt" />
+              </th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-savedWorkout>
+            <tr>
+              <td>{{ savedWorkout.workoutName }}</td>
+              <td>{{ savedWorkout.userId }}</td>
+              <td>
+                <div class="max-w-xs truncate">
+                  {{ savedWorkout.notes || '-' }}
+                </div>
+              </td>
+              <td>{{ savedWorkout.savedAt | date: 'short' }}</td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-eye"
+                    [rounded]="true"
+                    [text]="true"
+                    severity="info"
+                    (onClick)="viewSavedWorkout(savedWorkout)"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    [rounded]="true"
+                    [text]="true"
+                    severity="danger"
+                    (onClick)="deleteSavedWorkout(savedWorkout)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center py-8 text-surface-500">
+                No saved workouts found
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  `,
+  styles: ``
+})
+export class SavedWorkoutsComponent implements OnInit {
+  private savedWorkoutsService = inject(SavedWorkoutsService);
+
+  savedWorkouts = signal<SavedWorkout[]>([]);
+  loading = signal(true);
+
+  ngOnInit() {
+    this.loadSavedWorkouts();
+  }
+
+  loadSavedWorkouts() {
+    this.loading.set(true);
+    this.savedWorkoutsService.getSavedWorkouts().subscribe({
+      next: (savedWorkouts) => {
+        this.savedWorkouts.set(savedWorkouts);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
+  }
+
+  viewSavedWorkout(savedWorkout: SavedWorkout) {
+    console.log('View saved workout:', savedWorkout);
+  }
+
+  deleteSavedWorkout(savedWorkout: SavedWorkout) {
+    console.log('Delete saved workout:', savedWorkout);
+  }
+}
