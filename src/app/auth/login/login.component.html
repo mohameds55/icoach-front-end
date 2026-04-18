@@ -12,11 +12,13 @@
           id="email"
           type="email"
           class="field-input"
-          formControlName="email"
+          formControlName="emailOrUsername"
           placeholder="you@domain.com"
           autocomplete="email"
         />
-        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+        @if (
+          loginForm.controls.emailOrUsername.touched && loginForm.controls.emailOrUsername.invalid
+        ) {
           <small class="error-text">Please enter a valid email address.</small>
         }
       </div>
@@ -55,10 +57,18 @@
 
       <div class="form-actions">
         <button type="submit" class="btn-signin" [disabled]="loading()">
-          @if (loading()) { <i class="pi pi-spin pi-spinner"></i> } Sign in
+          @if (loading()) {
+            <i class="pi pi-spin pi-spinner"></i>
+          }
+          Sign in
         </button>
         <button type="button" class="btn-demo" (click)="fillDemo()">Demo Account</button>
       </div>
+
+      <p class="auth-switch">
+        New here?
+        <a routerLink="/auth/register">Create account</a>
+      </p>
     </form>
   </div>
 </section>

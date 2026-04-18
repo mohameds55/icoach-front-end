@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,17 +21,17 @@ export class LoginComponent {
   errorMessage = signal('');
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    emailOrUsername: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     remember: [false],
   });
 
   togglePassword() {
-    this.showPassword.update(v => !v);
+    this.showPassword.update((v) => !v);
   }
 
   fillDemo() {
-    this.loginForm.patchValue({ email: 'demo@icoach.app', password: 'demo1234' });
+    this.loginForm.patchValue({ emailOrUsername: 'demo@icoach.app', password: 'demo1234' });
   }
 
   submit(): void {
@@ -43,7 +43,7 @@ export class LoginComponent {
     this.loading.set(true);
     this.authService
       .login({
-        email: this.loginForm.controls.email.value ?? '',
+        emailOrUsername: this.loginForm.controls.emailOrUsername.value ?? '',
         password: this.loginForm.controls.password.value ?? '',
       })
       .pipe(finalize(() => this.loading.set(false)))

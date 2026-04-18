@@ -1,45 +1,40 @@
 <section class="auth-page">
-  <div class="auth-background" aria-hidden="true">
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="grid-overlay"></div>
-  </div>
-
-  <p-card styleClass="auth-card">
-    <div class="brand-block">
-      <p class="eyebrow">iCoach Platform</p>
-      <h1>Create your account</h1>
-      <p class="subtitle">Start your coaching journey with personalized insights.</p>
+  <div class="auth-card">
+    <div class="card-header">
+      <h2 class="card-title">Create an</h2>
+      <p class="card-subtitle">Start as an Admin — welcome to iCoach.</p>
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="submit()" class="auth-form" novalidate>
+      <div class="grid-two">
+        <div class="field">
+          <label for="firstName">First name</label>
+          <input id="firstName" type="text" class="field-input" formControlName="firstName" autocomplete="given-name" />
+          @if (registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid) {
+            <small class="error-text">Please enter your first name.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="lastName">Last name</label>
+          <input id="lastName" type="text" class="field-input" formControlName="lastName" autocomplete="family-name" />
+          @if (registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid) {
+            <small class="error-text">Please enter your last name.</small>
+          }
+        </div>
+      </div>
+
       <div class="field">
         <label for="username">Username</label>
-        <input id="username" type="text" pInputText formControlName="username" placeholder="johndoe" />
+        <input id="username" type="text" class="field-input" formControlName="username" autocomplete="username" />
         @if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
           <small class="error-text">Username must be at least 3 characters.</small>
         }
       </div>
 
       <div class="field">
-        <label for="firstName">First Name</label>
-        <input id="firstName" type="text" pInputText formControlName="firstName" placeholder="John" />
-        @if (registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid) {
-          <small class="error-text">Please enter your first name.</small>
-        }
-      </div>
-
-      <div class="field">
-        <label for="lastName">Last Name</label>
-        <input id="lastName" type="text" pInputText formControlName="lastName" placeholder="Doe" />
-        @if (registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid) {
-          <small class="error-text">Please enter your last name.</small>
-        }
-      </div>
-
-      <div class="field">
         <label for="email">Email</label>
-        <input id="email" type="email" pInputText formControlName="email" placeholder="user@example.com" />
+        <input id="email" type="email" class="field-input" formControlName="email" autocomplete="email" />
         @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
           <small class="error-text">Please enter a valid email address.</small>
         }
@@ -47,18 +42,13 @@
 
       <div class="field">
         <label for="password">Password</label>
-        <p-password
-          inputId="password"
-          formControlName="password"
-          [feedback]="true"
-          [toggleMask]="true"
-          [fluid]="true"
-          placeholder="••••••••"
-        />
+        <input id="password" type="password" class="field-input" formControlName="password" autocomplete="new-password" />
         @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
           <small class="error-text">Password must be at least 8 characters.</small>
         }
       </div>
+
+      <p class="role-note">Role: Admin (default)</p>
 
       @if (errorMessage()) {
         <p class="status error">{{ errorMessage() }}</p>
@@ -68,18 +58,19 @@
         <p class="status success">{{ successMessage() }}</p>
       }
 
-      <p-button
-        label="Create Account"
-        [loading]="loading()"
-        [disabled]="loading()"
-        type="submit"
-        styleClass="submit-btn"
-      />
-    </form>
+      <div class="form-actions">
+        <button type="submit" class="btn-create" [disabled]="loading()">
+          @if (loading()) { <i class="pi pi-spin pi-spinner"></i> }
+          Create account
+        </button>
+        <a routerLink="/auth/login" class="btn-cancel">Cancel</a>
+      </div>
 
-    <p class="footer-link">
-      Already have an account?
-      <a routerLink="/auth/login">Login</a>
-    </p>
-  </p-card>
+      <p class="form-footnote">After registration you'll see a success confirmation and an email verification step.</p>
+      <p class="auth-switch">
+        Already have an account?
+        <a routerLink="/auth/login">Sign in</a>
+      </p>
+    </form>
+  </div>
 </section>
