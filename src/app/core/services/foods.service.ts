@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Food {
   id: string;
@@ -18,7 +19,7 @@ export interface Food {
 })
 export class FoodsService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/foods';
+  private apiUrl = `${environment.apiUrl}/foods`;
 
   getFoods(): Observable<Food[]> {
     return this.http.get<Food[]>(this.apiUrl);

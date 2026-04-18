@@ -1,45 +1,49 @@
-<div class="space-y-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0">Food Management</h2>
-    <p-button label="Create Food" icon="pi pi-plus" (onClick)="createFood()" />
+<section class="gold-page">
+  <div class="gold-header">
+    <div>
+      <h2 class="gold-header-title">Food Management</h2>
+      <p class="gold-header-subtitle">Track nutrition entries with clean and searchable data.</p>
+    </div>
+    <p-button label="Create Food" icon="pi pi-plus" (onClick)="createFood()" styleClass="gold-button" />
   </div>
 
-  <!-- Search Input -->
-  <p-iconField iconPosition="left" class="w-full md:w-96">
-    <p-inputIcon styleClass="pi pi-search" />
-    <input
-      type="text"
-      pInputText
-      placeholder="Search foods..."
-      [(ngModel)]="searchQuery"
-      (ngModelChange)="onSearch()"
-      class="w-full"
-    />
-  </p-iconField>
+  <div class="gold-toolbar">
+    <p-iconField iconPosition="left" class="w-full md:w-96">
+      <p-inputIcon styleClass="pi pi-search" />
+      <input
+        type="text"
+        pInputText
+        placeholder="Search foods..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch()"
+        class="w-full"
+      />
+    </p-iconField>
 
-  <!-- Filter Buttons -->
-  <div class="flex gap-2">
     <p-button
       label="High Protein"
       icon="pi pi-filter"
       [outlined]="true"
       (onClick)="filterHighProtein()"
+      styleClass="gold-button-soft"
     />
     <p-button
       label="Low Calorie"
       icon="pi pi-filter"
       [outlined]="true"
       (onClick)="filterLowCalorie()"
+      styleClass="gold-button-soft"
     />
     <p-button
       label="Clear Filters"
       icon="pi pi-filter-slash"
       [text]="true"
       (onClick)="clearFilters()"
+      styleClass="gold-button-soft"
     />
   </div>
 
-  <p-card class="rounded-xl shadow-sm">
+  <p-card styleClass="gold-card">
     <p-table
       [value]="foods()"
       [loading]="loading()"
@@ -48,7 +52,7 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} foods"
-      styleClass="p-datatable-striped"
+      styleClass="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
@@ -110,4 +114,4 @@
       </ng-template>
     </p-table>
   </p-card>
-</div>
+</section>

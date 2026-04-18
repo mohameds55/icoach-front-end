@@ -1,1 +1,8 @@
-// Workouts component styles
+:host {
+	display: block;
+}
+
+:host ::ng-deep .p-select {
+	border-color: var(--border-soft);
+	background: #f8f1e4;
+}

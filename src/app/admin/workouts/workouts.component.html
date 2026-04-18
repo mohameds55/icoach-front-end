@@ -1,11 +1,18 @@
-<div class="space-y-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0">Workout Management</h2>
-    <p-button label="Create Workout" icon="pi pi-plus" (onClick)="createWorkout()" />
+<section class="gold-page">
+  <div class="gold-header">
+    <div>
+      <h2 class="gold-header-title">Workout Management</h2>
+      <p class="gold-header-subtitle">Build and organize training plans for your users.</p>
+    </div>
+    <p-button
+      label="Create Workout"
+      icon="pi pi-plus"
+      (onClick)="createWorkout()"
+      styleClass="gold-button"
+    />
   </div>
 
-  <!-- Filter Bar -->
-  <div class="flex gap-4">
+  <div class="gold-toolbar">
     <p-select
       [options]="filters()"
       [(ngModel)]="selectedFilter"
@@ -14,9 +21,10 @@
       [showClear]="true"
       class="flex-1 max-w-xs"
     />
+    <span class="gold-chip">Program Filters</span>
   </div>
 
-  <p-card class="rounded-xl shadow-sm">
+  <p-card styleClass="gold-card">
     <p-table
       [value]="workouts()"
       [loading]="loading()"
@@ -25,7 +33,7 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} workouts"
-      styleClass="p-datatable-striped"
+      styleClass="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
@@ -77,4 +85,4 @@
       </ng-template>
     </p-table>
   </p-card>
-</div>
+</section>

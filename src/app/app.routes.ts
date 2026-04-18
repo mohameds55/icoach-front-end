@@ -1,13 +1,34 @@
 import { Routes } from '@angular/router';
+import { authChildGuard, authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/admin/dashboard',
+    redirectTo: '/auth/login',
     pathMatch: 'full'
   },
   {
+    path: 'auth',
+    children: [
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+      },
+      {
+        path: 'login',
+        loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
+      },
+      {
+        path: 'register',
+        loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent)
+      }
+    ]
+  },
+  {
     path: 'admin',
+    // canActivate: [authGuard],
+    // canActivateChild: [authChildGuard],
     loadComponent: () => import('./admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       {
@@ -36,5 +57,9 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/saved-workouts/saved-workouts.component').then(m => m.SavedWorkoutsComponent)
       }
     ]
+  },
+  {
+    path: '**',
+    redirectTo: '/auth/login'
   }
 ];

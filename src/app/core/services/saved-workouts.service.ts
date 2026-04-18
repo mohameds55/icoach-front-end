@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface SavedWorkout {
   id: string;
@@ -16,7 +17,7 @@ export interface SavedWorkout {
 })
 export class SavedWorkoutsService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/saved-workouts';
+  private apiUrl = `${environment.apiUrl}/saved-workouts`;
 
   getSavedWorkouts(): Observable<SavedWorkout[]> {
     return this.http.get<SavedWorkout[]>(this.apiUrl);

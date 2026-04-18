@@ -1,0 +1,57 @@
+<section class="auth-page">
+  <div class="auth-background" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <p-card styleClass="auth-card">
+    <div class="brand-block">
+      <p class="eyebrow">iCoach Platform</p>
+      <h1>Welcome back</h1>
+      <p class="subtitle">Sign in to continue to your coaching dashboard.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="auth-form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" placeholder="user@example.com" />
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+          <small class="error-text">Please enter a valid email address.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          [fluid]="true"
+          placeholder="••••••••"
+        />
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+          <small class="error-text">Password must be at least 8 characters.</small>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="status error">{{ errorMessage() }}</p>
+      }
+
+      <p-button
+        label="Login"
+        [loading]="loading()"
+        [disabled]="loading()"
+        type="submit"
+        styleClass="submit-btn"
+      />
+    </form>
+
+    <p class="footer-link">
+      New here?
+      <a routerLink="/auth/register">Create an account</a>
+    </p>
+  </p-card>
+</section>

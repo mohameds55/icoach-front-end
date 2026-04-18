@@ -1,10 +1,13 @@
-<div class="space-y-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0">User Management</h2>
-    <p-button label="Add User" icon="pi pi-plus" />
+<section class="gold-page">
+  <div class="gold-header">
+    <div>
+      <h2 class="gold-header-title">User Management</h2>
+      <p class="gold-header-subtitle">Manage admins and coaching accounts with confidence.</p>
+    </div>
+    <p-button label="Add User" icon="pi pi-plus" styleClass="gold-button" />
   </div>
 
-  <p-card class="rounded-xl shadow-sm">
+  <p-card styleClass="gold-card">
     <p-table
       [value]="users()"
       [loading]="loading()"
@@ -13,7 +16,7 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
-      styleClass="p-datatable-striped"
+      styleClass="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
@@ -83,4 +86,4 @@
       </ng-template>
     </p-table>
   </p-card>
-</div>
+</section>

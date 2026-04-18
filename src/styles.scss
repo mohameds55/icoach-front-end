@@ -3,3 +3,123 @@
 @use 'tailwindcss';
 
 @import 'primeicons/primeicons.css';
+
+:root {
+	--gold-primary: #caa748;
+	--gold-accent: #e8d7a8;
+	--cream-bg: #efe6d8;
+	--cream-surface: #f7f2e8;
+	--text-primary: #5e4a36;
+	--text-muted: #9a8f7a;
+	--border-soft: #ddd2bd;
+	--success-soft: #d9e9d0;
+	--danger-soft: #f3dbd3;
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: 'Nunito', 'Segoe UI', sans-serif;
+	color: var(--text-primary);
+	background:
+		radial-gradient(circle at 0% 0%, rgba(202, 167, 72, 0.18), transparent 36%),
+		radial-gradient(circle at 100% 15%, rgba(232, 215, 168, 0.24), transparent 32%),
+		linear-gradient(180deg, #f8f3ea 0%, var(--cream-bg) 100%);
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: 'Playfair Display', Georgia, serif;
+	letter-spacing: 0.01em;
+}
+
+.gold-page {
+	display: grid;
+	gap: 1.1rem;
+}
+
+.gold-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	border: 1px solid var(--border-soft);
+	border-radius: 1rem;
+	background: linear-gradient(120deg, #f8f3e8, #f2eadc);
+	padding: 1rem 1.2rem;
+}
+
+.gold-header-title {
+	margin: 0;
+	font-size: clamp(1.4rem, 1.2rem + 0.8vw, 2rem);
+}
+
+.gold-header-subtitle {
+	margin: 0.2rem 0 0;
+	color: var(--text-muted);
+	font-weight: 600;
+}
+
+.gold-card {
+	border: 1px solid var(--border-soft);
+	border-radius: 1rem;
+	background: var(--cream-surface);
+	box-shadow: 0 6px 24px rgba(94, 74, 54, 0.06);
+}
+
+.gold-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+}
+
+.gold-chip {
+	border: 1px solid var(--border-soft);
+	background: #f4ede0;
+	color: var(--text-primary);
+	border-radius: 999px;
+	padding: 0.35rem 0.7rem;
+	font-weight: 700;
+	font-size: 0.8rem;
+}
+
+.gold-table .p-datatable-thead > tr > th {
+	background: #eee2cb;
+	color: var(--text-primary);
+	border-color: var(--border-soft);
+}
+
+.gold-table .p-datatable-tbody > tr > td {
+	border-color: #e6ddce;
+}
+
+.gold-table .p-datatable-tbody > tr:nth-child(even) {
+	background: #fcf9f4;
+}
+
+.gold-table .p-paginator {
+	background: transparent;
+	border-color: var(--border-soft);
+}
+
+.gold-button .p-button {
+	border: 0;
+	background: linear-gradient(140deg, #d7b55f, var(--gold-primary));
+	color: #fffdf8;
+	font-weight: 800;
+}
+
+.gold-button-soft .p-button {
+	border: 1px solid var(--border-soft);
+	background: #f5eedf;
+	color: var(--text-primary);
+	font-weight: 700;
+}

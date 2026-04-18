@@ -1,1 +1,7 @@
-// Users component styles
+:host {
+	display: block;
+}
+
+:host ::ng-deep .p-tag {
+	font-weight: 700;
+}

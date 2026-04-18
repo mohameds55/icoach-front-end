@@ -1,23 +1,160 @@
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-  @for (card of statCards(); track card.title) {
-    <p-card>
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="text-surface-500 dark:text-surface-400 text-sm mb-2">
-            {{ card.title }}
-          </div>
-          @if (card.loading) {
-            <p-skeleton width="4rem" height="2rem" />
-          } @else {
-            <div class="text-3xl font-bold text-surface-900 dark:text-surface-0">
-              {{ card.count }}
-            </div>
-          }
+<div class="dashboard">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Overview</h2>
+      <p class="page-subtitle">A calm, data-focused summary of platform activity</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-filter">Filter</button>
+      <button class="btn-create">Create New</button>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stats-row">
+    @for (card of statCards(); track card.title) {
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-title">{{ card.title }}</span>
+          <span class="stat-badge">{{ card.period }}</span>
         </div>
-        <div class="flex items-center justify-center w-16 h-16 rounded-lg bg-primary-100 dark:bg-primary-900/20">
-          <i [class]="card.icon + ' text-3xl text-primary-600 dark:text-primary-400'"></i>
-        </div>
+        @if (card.loading) {
+          <div class="stat-skeleton"></div>
+        } @else {
+          <p class="stat-value">{{ card.value }}</p>
+        }
+        <p class="stat-desc">{{ card.description }}</p>
       </div>
-    </p-card>
-  }
+    }
+  </div>
+
+  <!-- Middle Row -->
+  <div class="mid-row">
+    <!-- Recent Activity -->
+    <div class="panel activity-panel">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <span class="panel-label">Recent Activity</span>
+          <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span class="live-text">Live</span>
+          </div>
+        </div>
+        <button class="btn-view-all">View all</button>
+      </div>
+      <div class="activity-list">
+        @for (item of activityItems(); track item.name) {
+          <div class="activity-item">
+            <div class="activity-avatar" [style.background]="item.color">{{ item.initials }}</div>
+            <div class="activity-body">
+              <p class="activity-text">
+                <strong>{{ item.name }}</strong> {{ item.action }}
+                <span class="activity-highlight">'{{ item.item }}'</span>
+              </p>
+              <span class="activity-time">{{ item.time }}</span>
+            </div>
+            <span [class]="'activity-value ' + item.valueClass">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Weekly Chart -->
+    <div class="panel chart-panel">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <span class="panel-label">Weekly Summary</span>
+          <p class="chart-trend-title">Trend</p>
+        </div>
+        <span class="chart-period-label">Last 7 days</span>
+      </div>
+      <div class="chart-area">
+        <svg viewBox="0 0 360 120" preserveAspectRatio="none" class="trend-svg">
+          <line x1="0" y1="30" x2="360" y2="30" stroke="#e5ddd0" stroke-width="1" />
+          <line x1="0" y1="60" x2="360" y2="60" stroke="#e5ddd0" stroke-width="1" />
+          <line x1="0" y1="90" x2="360" y2="90" stroke="#e5ddd0" stroke-width="1" />
+          <path [attr.d]="mainAreaPath" fill="rgba(94, 74, 54, 0.07)" />
+          <path [attr.d]="secondaryLinePath" fill="none" stroke="#c8b99a" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <path [attr.d]="mainLinePath" fill="none" stroke="#5e4a36" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Section -->
+  <div class="panel users-panel">
+    <div class="panel-header">
+      <div class="panel-title-group">
+        <span class="panel-label">Users</span>
+        <h3 class="section-heading">Manage</h3>
+      </div>
+      <div class="users-actions">
+        <div class="users-search-wrap">
+          <input
+            type="text"
+            placeholder="Search users"
+            class="users-search"
+            [value]="userSearch()"
+            (input)="userSearch.set($any($event.target).value)"
+          />
+        </div>
+        <button class="btn-invite">Invite</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Verified</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (usersLoading()) {
+            @for (i of [1, 2, 3]; track i) {
+              <tr>
+                <td colspan="6"><div class="row-skeleton"></div></td>
+              </tr>
+            }
+          } @else {
+            @for (user of displayedUsers(); track user.id) {
+              <tr>
+                <td>
+                  <div class="name-cell">
+                    <div class="name-avatar">{{ user.name.charAt(0) }}</div>
+                    <div>
+                      <p class="name-text">{{ user.name }}</p>
+                      <p class="name-sub">{{ user.role | titlecase }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td><a [href]="'mailto:' + user.email" class="email-link">{{ user.email }}</a></td>
+                <td>{{ user.role | titlecase }}</td>
+                <td>
+                  <span [class]="'verify-chip ' + (user.isVerified ? 'verified' : 'pending')">
+                    {{ user.isVerified ? 'Verified' : 'Pending' }}
+                  </span>
+                </td>
+                <td class="date-cell">{{ user.createdAt | date: 'yyyy-MM-dd' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn-row-action">View</button>
+                    <button class="btn-row-action">Edit</button>
+                    <button class="btn-row-action btn-row-delete">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

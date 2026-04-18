@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Workout {
   id: string;
@@ -22,7 +23,7 @@ export interface WorkoutFilter {
 })
 export class WorkoutsService {
   private http = inject(HttpClient);
-  private apiUrl = '/api/workouts';
+  private apiUrl = `${environment.apiUrl}/workouts`;
 
   getWorkouts(): Observable<Workout[]> {
     return this.http.get<Workout[]>(this.apiUrl);

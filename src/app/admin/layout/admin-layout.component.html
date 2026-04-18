@@ -1,39 +1,56 @@
-<div class="flex h-screen overflow-hidden">
-  <!-- Sidebar -->
-  <aside class="h-screen w-64 border-r bg-white dark:bg-surface-900">
-    <div class="flex h-16 items-center justify-center border-b px-4">
-      <h1 class="text-xl font-bold text-surface-900 dark:text-surface-0">
-        Boost Admin
-      </h1>
+<div class="admin-shell">
+  <header class="topbar">
+    <div class="topbar-left">
+      <i class="pi pi-chart-bar brand-icon"></i>
+      <span class="brand-name">iCoach</span>
     </div>
-    <nav class="p-4">
-      <p-panelMenu [model]="menuItems()" />
-    </nav>
-  </aside>
+    <div class="topbar-center">
+      <div class="search-wrap">
+        <i class="pi pi-search"></i>
+        <input type="text" placeholder="Search users, workouts, foods, saved plans" class="search-input" />
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-new-item">New Item</button>
+      <button class="btn-icon-topbar"><i class="pi pi-bell"></i></button>
+      <div class="topbar-user">
+        <div class="topbar-avatar">A</div>
+        <div class="user-details">
+          <span class="user-name">{{ adminName() }}</span>
+          <span class="user-role">Head Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  <!-- Main Content Area -->
-  <div class="flex flex-1 flex-col overflow-hidden">
-    <!-- Topbar -->
-    <header class="sticky top-0 z-50 border-b bg-white dark:bg-surface-900">
-      <p-toolbar>
-        <ng-template pTemplate="start">
-          <span class="text-lg font-semibold text-surface-900 dark:text-surface-0">
-            Dashboard
-          </span>
-        </ng-template>
-        <ng-template pTemplate="end">
-          <p-button
-            icon="pi pi-user"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-          />
-        </ng-template>
-      </p-toolbar>
-    </header>
+  <div class="admin-body">
+    <aside class="admin-sidebar">
+      <div class="sidebar-profile">
+        <div class="profile-avatar">A</div>
+        <div class="profile-info">
+          <p class="profile-name">iCoach</p>
+          <p class="profile-sub">Trusted Fitness Platform</p>
+        </div>
+      </div>
 
-    <!-- Page Content -->
-    <main class="flex-1 overflow-y-auto bg-surface-50 dark:bg-surface-950 p-6">
+      <nav class="sidebar-nav">
+        @for (item of mainNavItems(); track item.label) {
+          <a [routerLink]="item.route" routerLinkActive="nav-active" class="nav-item">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      </nav>
+
+      <div class="nav-spacer"></div>
+
+      <div class="sidebar-footer-nav">
+        <a class="nav-item"><i class="pi pi-cog"></i><span>Settings</span></a>
+        <a class="nav-item"><i class="pi pi-question-circle"></i><span>Help</span></a>
+      </div>
+    </aside>
+
+    <main class="admin-main">
       <router-outlet />
     </main>
   </div>
