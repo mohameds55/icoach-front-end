@@ -1,0 +1,113 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0">Food Management</h2>
+    <p-button label="Create Food" icon="pi pi-plus" (onClick)="createFood()" />
+  </div>
+
+  <!-- Search Input -->
+  <p-iconField iconPosition="left" class="w-full md:w-96">
+    <p-inputIcon styleClass="pi pi-search" />
+    <input
+      type="text"
+      pInputText
+      placeholder="Search foods..."
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearch()"
+      class="w-full"
+    />
+  </p-iconField>
+
+  <!-- Filter Buttons -->
+  <div class="flex gap-2">
+    <p-button
+      label="High Protein"
+      icon="pi pi-filter"
+      [outlined]="true"
+      (onClick)="filterHighProtein()"
+    />
+    <p-button
+      label="Low Calorie"
+      icon="pi pi-filter"
+      [outlined]="true"
+      (onClick)="filterLowCalorie()"
+    />
+    <p-button
+      label="Clear Filters"
+      icon="pi pi-filter-slash"
+      [text]="true"
+      (onClick)="clearFilters()"
+    />
+  </div>
+
+  <p-card class="rounded-xl shadow-sm">
+    <p-table
+      [value]="foods()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} foods"
+      styleClass="p-datatable-striped"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name">
+            Name <p-sortIcon field="name" />
+          </th>
+          <th pSortableColumn="calories">
+            Calories <p-sortIcon field="calories" />
+          </th>
+          <th pSortableColumn="protein">
+            Protein (g) <p-sortIcon field="protein" />
+          </th>
+          <th pSortableColumn="carbs">
+            Carbs (g) <p-sortIcon field="carbs" />
+          </th>
+          <th pSortableColumn="fat">
+            Fat (g) <p-sortIcon field="fat" />
+          </th>
+          <th pSortableColumn="category">
+            Category <p-sortIcon field="category" />
+          </th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-food>
+        <tr>
+          <td>{{ food.name }}</td>
+          <td>{{ food.calories }}</td>
+          <td>{{ food.protein }}</td>
+          <td>{{ food.carbs }}</td>
+          <td>{{ food.fat }}</td>
+          <td>{{ food.category }}</td>
+          <td>
+            <div class="flex gap-2">
+              <p-button
+                icon="pi pi-pencil"
+                [rounded]="true"
+                [text]="true"
+                severity="secondary"
+                (onClick)="editFood(food)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                (onClick)="deleteFood(food)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-8 text-surface-500">
+            No foods found
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

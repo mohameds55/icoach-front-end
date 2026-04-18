@@ -1,0 +1,23 @@
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+  @for (card of statCards(); track card.title) {
+    <p-card>
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-surface-500 dark:text-surface-400 text-sm mb-2">
+            {{ card.title }}
+          </div>
+          @if (card.loading) {
+            <p-skeleton width="4rem" height="2rem" />
+          } @else {
+            <div class="text-3xl font-bold text-surface-900 dark:text-surface-0">
+              {{ card.count }}
+            </div>
+          }
+        </div>
+        <div class="flex items-center justify-center w-16 h-16 rounded-lg bg-primary-100 dark:bg-primary-900/20">
+          <i [class]="card.icon + ' text-3xl text-primary-600 dark:text-primary-400'"></i>
+        </div>
+      </div>
+    </p-card>
+  }
+</div>
