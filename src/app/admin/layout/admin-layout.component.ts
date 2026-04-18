@@ -15,6 +15,15 @@ interface NavItem {
 })
 export class AdminLayoutComponent {
   adminName = signal('Admin');
+  sidebarOpen = signal(false);
+
+  toggleSidebar() {
+    this.sidebarOpen.update(v => !v);
+  }
+
+  closeSidebar() {
+    this.sidebarOpen.set(false);
+  }
 
   mainNavItems = signal<NavItem[]>([
     { label: 'Overview', icon: 'pi pi-home', route: '/admin/dashboard' },

@@ -1,6 +1,9 @@
 <div class="admin-shell">
   <header class="topbar">
     <div class="topbar-left">
+      <button class="btn-hamburger" (click)="toggleSidebar()" aria-label="Toggle menu">
+        <i class="pi pi-bars"></i>
+      </button>
       <i class="pi pi-chart-bar brand-icon"></i>
       <span class="brand-name">iCoach</span>
     </div>
@@ -24,7 +27,11 @@
   </header>
 
   <div class="admin-body">
-    <aside class="admin-sidebar">
+    @if (sidebarOpen()) {
+      <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+    }
+
+    <aside class="admin-sidebar" [class.sidebar-is-open]="sidebarOpen()">
       <div class="sidebar-profile">
         <div class="profile-avatar">A</div>
         <div class="profile-info">
@@ -35,7 +42,7 @@
 
       <nav class="sidebar-nav">
         @for (item of mainNavItems(); track item.label) {
-          <a [routerLink]="item.route" routerLinkActive="nav-active" class="nav-item">
+          <a [routerLink]="item.route" routerLinkActive="nav-active" class="nav-item" (click)="closeSidebar()">
             <i [class]="item.icon"></i>
             <span>{{ item.label }}</span>
           </a>
