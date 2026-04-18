@@ -1,21 +1,21 @@
 <section class="auth-page">
-  <div class="auth-background" aria-hidden="true">
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="grid-overlay"></div>
-  </div>
-
-  <p-card styleClass="auth-card">
-    <div class="brand-block">
-      <p class="eyebrow">iCoach Platform</p>
-      <h1>Welcome back</h1>
-      <p class="subtitle">Sign in to continue to your coaching dashboard.</p>
+  <div class="auth-card">
+    <div class="card-header">
+      <h2 class="card-title">Sign in to</h2>
+      <p class="card-subtitle">Welcome back — manage your community with care.</p>
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="submit()" class="auth-form" novalidate>
       <div class="field">
         <label for="email">Email</label>
-        <input id="email" type="email" pInputText formControlName="email" placeholder="user@example.com" />
+        <input
+          id="email"
+          type="email"
+          class="field-input"
+          formControlName="email"
+          placeholder="you@domain.com"
+          autocomplete="email"
+        />
         @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
           <small class="error-text">Please enter a valid email address.</small>
         }
@@ -23,35 +23,42 @@
 
       <div class="field">
         <label for="password">Password</label>
-        <p-password
-          inputId="password"
-          formControlName="password"
-          [feedback]="false"
-          [toggleMask]="true"
-          [fluid]="true"
-          placeholder="••••••••"
-        />
+        <div class="password-wrap">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            class="field-input"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+          <button type="button" class="btn-toggle-pw" (click)="togglePassword()" tabindex="-1">
+            <i [class]="showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
+        </div>
         @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
           <small class="error-text">Password must be at least 8 characters.</small>
         }
       </div>
 
+      <div class="remember-row">
+        <label class="remember-label">
+          <input type="checkbox" formControlName="remember" class="remember-checkbox" />
+          <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot-link">Forgot?</a>
+      </div>
+
       @if (errorMessage()) {
-        <p class="status error">{{ errorMessage() }}</p>
+        <p class="status-error">{{ errorMessage() }}</p>
       }
 
-      <p-button
-        label="Login"
-        [loading]="loading()"
-        [disabled]="loading()"
-        type="submit"
-        styleClass="submit-btn"
-      />
+      <div class="form-actions">
+        <button type="submit" class="btn-signin" [disabled]="loading()">
+          @if (loading()) { <i class="pi pi-spin pi-spinner"></i> } Sign in
+        </button>
+        <button type="button" class="btn-demo" (click)="fillDemo()">Demo Account</button>
+      </div>
     </form>
-
-    <p class="footer-link">
-      New here?
-      <a routerLink="/auth/register">Create an account</a>
-    </p>
-  </p-card>
+  </div>
 </section>
