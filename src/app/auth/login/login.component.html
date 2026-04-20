@@ -7,19 +7,19 @@
 
     <form [formGroup]="loginForm" (ngSubmit)="submit()" class="auth-form" novalidate>
       <div class="field">
-        <label for="email">Email</label>
+        <label for="emailOrUsername">Email or username</label>
         <input
-          id="email"
-          type="email"
+          id="emailOrUsername"
+          type="text"
           class="field-input"
           formControlName="emailOrUsername"
-          placeholder="you@domain.com"
-          autocomplete="email"
+          placeholder="you@domain.com or username"
+          autocomplete="username"
         />
         @if (
           loginForm.controls.emailOrUsername.touched && loginForm.controls.emailOrUsername.invalid
         ) {
-          <small class="error-text">Please enter a valid email address.</small>
+          <small class="error-text">Email or username is required.</small>
         }
       </div>
 

@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { finalize } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
 
 interface NavItem {
   label: string;
@@ -14,8 +16,13 @@ interface NavItem {
   styleUrl: './admin-layout.component.scss',
 })
 export class AdminLayoutComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   adminName = signal('Admin');
   sidebarOpen = signal(false);
+  userMenuOpen = signal(false);
+  loggingOut = signal(false);
 
   toggleSidebar() {
     this.sidebarOpen.update(v => !v);
@@ -23,6 +30,42 @@ export class AdminLayoutComponent {
 
   closeSidebar() {
     this.sidebarOpen.set(false);
+  }
+
+  toggleUserMenu() {
+    this.userMenuOpen.update(v => !v);
+  }
+
+  closeUserMenu() {
+    this.userMenuOpen.set(false);
+  }
+
+  logout() {
+    if (this.loggingOut()) {
+      return;
+    }
+
+    this.loggingOut.set(true);
+
+    this.authService
+      .logout()
+      .pipe(finalize(() => this.loggingOut.set(false)))
+      .subscribe({
+        next: () => {
+          this.finishLogout();
+        },
+        error: () => {
+          // If backend logout fails, still clear local session and redirect.
+          this.finishLogout();
+        },
+      });
+  }
+
+  private finishLogout() {
+    this.authService.clearToken();
+    this.closeSidebar();
+    this.closeUserMenu();
+    this.router.navigateByUrl('/auth/login');
   }
 
   mainNavItems = signal<NavItem[]>([

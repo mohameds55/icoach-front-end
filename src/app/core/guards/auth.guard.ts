@@ -15,3 +15,10 @@ export const authChildGuard: CanActivateChildFn = () => {
 
   return authService.isAuthenticated() ? true : router.createUrlTree(['/auth/login']);
 };
+
+export const guestGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  return authService.isAuthenticated() ? router.createUrlTree(['/admin/dashboard']) : true;
+};

@@ -6,7 +6,17 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { FoodsService, Food } from '../../core/services/foods.service';
+import {
+  FoodsService,
+  Food,
+  FoodsPaginatedResponse,
+  FoodsQueryParams,
+} from '../../core/services/foods.service';
+
+interface PageEvent {
+  first: number;
+  rows: number;
+}
 
 @Component({
   selector: 'app-foods',
@@ -27,71 +37,80 @@ export class FoodsComponent implements OnInit {
 
   foods = signal<Food[]>([]);
   loading = signal(true);
+  page = signal(1);
+  limit = signal(20);
+  totalRecords = signal(0);
+
   searchQuery = '';
+  minCalories: number | null = null;
+  maxCalories: number | null = null;
+  minProtein: number | null = null;
 
   ngOnInit() {
     this.loadFoods();
   }
 
-  loadFoods() {
+  loadFoods(overrideParams?: Partial<FoodsQueryParams>) {
     this.loading.set(true);
-    this.foodsService.getFoods().subscribe({
-      next: (foods) => {
+
+    const params: FoodsQueryParams = {
+      page: overrideParams?.page ?? this.page(),
+      limit: overrideParams?.limit ?? this.limit(),
+      search: overrideParams?.search ?? this.searchQuery,
+      minCalories: overrideParams?.minCalories ?? this.minCalories ?? undefined,
+      maxCalories: overrideParams?.maxCalories ?? this.maxCalories ?? undefined,
+      minProtein: overrideParams?.minProtein ?? this.minProtein ?? undefined,
+    };
+
+    this.foodsService.getFoods(params).subscribe({
+      next: (response) => {
+        const { foods, total } = this.mapFoodsResponse(response);
         this.foods.set(foods);
+        this.totalRecords.set(total);
         this.loading.set(false);
       },
       error: () => {
-        this.loading.set(false);
-      }
-    });
-  }
-
-  onSearch() {
-    if (this.searchQuery.trim()) {
-      this.loading.set(true);
-      this.foodsService.searchFoods(this.searchQuery).subscribe({
-        next: (foods) => {
-          this.foods.set(foods);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-        }
-      });
-    } else {
-      this.loadFoods();
-    }
-  }
-
-  filterHighProtein() {
-    this.loading.set(true);
-    this.foodsService.getHighProteinFoods().subscribe({
-      next: (foods) => {
-        this.foods.set(foods);
+        this.foods.set([]);
+        this.totalRecords.set(0);
         this.loading.set(false);
       },
-      error: () => {
-        this.loading.set(false);
-      }
     });
   }
 
-  filterLowCalorie() {
-    this.loading.set(true);
-    this.foodsService.getLowCalorieFoods().subscribe({
-      next: (foods) => {
-        this.foods.set(foods);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
+  applyFilters() {
+    this.page.set(1);
+    this.loadFoods({ page: 1 });
+  }
+
+  onSearchInputChange() {
+    this.page.set(1);
+    this.loadFoods({ page: 1 });
   }
 
   clearFilters() {
     this.searchQuery = '';
-    this.loadFoods();
+    this.minCalories = null;
+    this.maxCalories = null;
+    this.minProtein = null;
+    this.page.set(1);
+    this.loadFoods({ page: 1 });
+  }
+
+  onPageChange(event: PageEvent) {
+    const page = Math.floor(event.first / event.rows) + 1;
+    this.page.set(page);
+    this.limit.set(event.rows);
+    this.loadFoods({ page, limit: event.rows });
+  }
+
+  private mapFoodsResponse(response: Food[] | FoodsPaginatedResponse): { foods: Food[]; total: number } {
+    if (Array.isArray(response)) {
+      return { foods: response, total: response.length };
+    }
+
+    const foods = response.foods ?? response.data ?? response.items ?? [];
+    const total = response.total ?? response.totalCount ?? foods.length;
+    return { foods, total };
   }
 
   createFood() {

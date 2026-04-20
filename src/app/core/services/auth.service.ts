@@ -18,7 +18,12 @@ export interface LoginPayload {
 }
 
 export interface AuthResponse {
-  token: string;
+  token?: string;
+  accessToken?: string;
+  data?: {
+    token?: string;
+    accessToken?: string;
+  };
   user?: {
     id: string;
     email: string;
@@ -47,7 +52,14 @@ export class AuthService {
   login(payload: LoginPayload): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.authApiUrl}/login`, payload)
-      .pipe(tap((response) => this.setToken(response.token)));
+      .pipe(
+        tap((response) => {
+          const token = this.extractToken(response);
+          if (token) {
+            this.setToken(token);
+          }
+        })
+      );
   }
 
   logout(): Observable<void> {
@@ -61,6 +73,12 @@ export class AuthService {
   clearToken(): void {
     this.tokenSignal.set(null);
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('token');
+  }
+
+  getToken(): string | null {
+    return this.tokenSignal() ?? this.getStoredToken();
   }
 
   private setToken(token: string): void {
@@ -69,6 +87,14 @@ export class AuthService {
   }
 
   private getStoredToken(): string | null {
-    return localStorage.getItem('auth_token');
+    return (
+      localStorage.getItem('auth_token') ??
+      localStorage.getItem('access_token') ??
+      localStorage.getItem('token')
+    );
+  }
+
+  private extractToken(response: AuthResponse): string | null {
+    return response.token ?? response.accessToken ?? response.data?.token ?? response.data?.accessToken ?? null;
   }
 }

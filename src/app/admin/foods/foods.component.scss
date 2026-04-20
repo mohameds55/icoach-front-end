@@ -6,3 +6,20 @@
 	border-color: var(--border-soft);
 	background: #f8f1e4;
 }
+
+.gold-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+}
+
+.filter-input {
+	min-width: 12rem;
+	flex: 1 1 12rem;
+}
+
+@media (max-width: 720px) {
+	.filter-input {
+		min-width: 100%;
+	}
+}

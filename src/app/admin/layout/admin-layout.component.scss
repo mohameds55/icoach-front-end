@@ -4,31 +4,6 @@
 	overflow: hidden;
 }
 
-.admin-shell {
-	height: 100vh;
-	display: grid;
-	grid-template-rows: 64px 1fr;
-	overflow: hidden;
-}
-
-/* ── Topbar ── */
-.topbar {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	padding: 0 1.5rem;
-	background: #f8f3ea;
-	border-bottom: 1px solid var(--border-soft);
-	z-index: 30;
-}
-
-.topbar-left {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	min-width: 13rem;
-}
-
 .brand-icon {
 	font-size: 1.35rem;
 	color: var(--gold-primary);
@@ -39,22 +14,6 @@
 	font-size: 1.2rem;
 	font-weight: 700;
 	color: var(--text-primary);
-}
-
-.topbar-center {
-	flex: 1;
-}
-
-.search-wrap {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	background: #fff;
-	border: 1px solid var(--border-soft);
-	border-radius: 2rem;
-	padding: 0.45rem 1rem;
-	max-width: 30rem;
-	margin: 0 auto;
 }
 
 .search-wrap i {
@@ -76,13 +35,6 @@
 	color: var(--text-muted);
 }
 
-.topbar-right {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	margin-left: auto;
-}
-
 .btn-new-item {
 	background: linear-gradient(140deg, #d7b55f, var(--gold-primary));
 	color: #fff;
@@ -96,25 +48,16 @@
 	white-space: nowrap;
 }
 
-.btn-icon-topbar {
-	width: 2.2rem;
-	height: 2.2rem;
-	border: 1px solid var(--border-soft);
-	background: #f4e8d1;
-	border-radius: 50%;
-	display: grid;
-	place-items: center;
-	cursor: pointer;
-	color: var(--text-primary);
-	flex-shrink: 0;
+.user-menu-wrap {
+	position: relative;
 }
 
 .topbar-user {
-	display: flex;
-	align-items: center;
-	gap: 0.6rem;
 	cursor: pointer;
-	flex-shrink: 0;
+}
+
+.topbar-user.open {
+	box-shadow: 0 0 0 2px rgba(202, 167, 72, 0.15);
 }
 
 .topbar-avatar {
@@ -145,11 +88,59 @@
 	color: var(--text-muted);
 }
 
-/* ── Body ── */
-.admin-body {
-	display: grid;
-	grid-template-columns: 14rem 1fr;
-	overflow: hidden;
+.user-menu-chevron {
+	font-size: 0.78rem;
+	color: var(--text-muted);
+	transition: transform 0.2s ease;
+}
+
+.user-menu-chevron.open {
+	transform: rotate(180deg);
+}
+
+.user-menu-dropdown {
+	position: absolute;
+	top: calc(100% + 0.45rem);
+	right: 0;
+	min-width: 10.5rem;
+	background: #fff;
+	border: 1px solid var(--border-soft);
+	border-radius: 0.75rem;
+	box-shadow: 0 10px 28px rgba(94, 74, 54, 0.14);
+	padding: 0.35rem;
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.user-menu-item {
+	width: 100%;
+	border: 0;
+	background: transparent;
+	border-radius: 0.5rem;
+	padding: 0.48rem 0.58rem;
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	font-family: inherit;
+	font-size: 0.83rem;
+	font-weight: 600;
+	color: var(--text-primary);
+	cursor: pointer;
+}
+
+.user-menu-item:hover {
+	background: rgba(202, 167, 72, 0.12);
+}
+
+.user-menu-item.logout {
+	color: #b45353;
+}
+
+.user-menu-item:disabled {
+	opacity: 0.65;
+	cursor: not-allowed;
 }
 
 /* ── Sidebar ── */
@@ -160,14 +151,6 @@
 	flex-direction: column;
 	overflow-y: auto;
 	overflow-x: hidden;
-}
-
-.sidebar-profile {
-	display: flex;
-	align-items: center;
-	gap: 0.65rem;
-	padding: 1rem 0.9rem;
-	border-bottom: 1px solid var(--border-soft);
 }
 
 .profile-avatar {
@@ -197,13 +180,6 @@
 	font-weight: 600;
 }
 
-.sidebar-nav {
-	padding: 0.75rem 0.65rem 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.15rem;
-}
-
 .nav-item {
 	display: flex;
 	align-items: center;
@@ -218,6 +194,19 @@
 	transition: background 0.15s;
 }
 
+.nav-item-button {
+	width: 100%;
+	border: 0;
+	background: transparent;
+	text-align: left;
+	font-family: inherit;
+}
+
+.nav-item-button:disabled {
+	opacity: 0.65;
+	cursor: not-allowed;
+}
+
 .nav-item:hover {
 	background: rgba(202, 167, 72, 0.12);
 }
@@ -230,35 +219,6 @@
 
 .nav-spacer {
 	flex: 1;
-}
-
-.sidebar-footer-nav {
-	padding: 0 0.65rem 0.75rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.15rem;
-}
-
-/* ── Main ── */
-.admin-main {
-	overflow-y: auto;
-	padding: 1.25rem;
-	background: var(--cream-bg);
-}
-
-/* ── Hamburger ── */
-.btn-hamburger {
-	width: 2.2rem;
-	height: 2.2rem;
-	border: 1px solid var(--border-soft);
-	background: #f4e8d1;
-	border-radius: 0.45rem;
-	display: grid;
-	place-items: center;
-	cursor: pointer;
-	color: var(--text-primary);
-	flex-shrink: 0;
-	font-size: 1rem;
 }
 
 @media (max-width: 980px) {
@@ -312,6 +272,14 @@
 
 	.user-details {
 		display: none;
+	}
+
+	.topbar-user {
+		padding-right: 0.3rem;
+	}
+
+	.user-menu-dropdown {
+		right: -0.15rem;
 	}
 
 	.topbar {

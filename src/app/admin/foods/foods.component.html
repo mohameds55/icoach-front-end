@@ -13,27 +13,18 @@
       <input
         type="text"
         pInputText
-        placeholder="Search foods..."
+        placeholder="Search foods by name..."
         [(ngModel)]="searchQuery"
-        (ngModelChange)="onSearch()"
+        (ngModelChange)="onSearchInputChange()"
         class="w-full"
       />
     </p-iconField>
 
-    <p-button
-      label="High Protein"
-      icon="pi pi-filter"
-      [outlined]="true"
-      (onClick)="filterHighProtein()"
-      styleClass="gold-button-soft"
-    />
-    <p-button
-      label="Low Calorie"
-      icon="pi pi-filter"
-      [outlined]="true"
-      (onClick)="filterLowCalorie()"
-      styleClass="gold-button-soft"
-    />
+    <input type="number" pInputText [(ngModel)]="minCalories" placeholder="Min calories/100g" class="filter-input" />
+    <input type="number" pInputText [(ngModel)]="maxCalories" placeholder="Max calories/100g" class="filter-input" />
+    <input type="number" pInputText [(ngModel)]="minProtein" placeholder="Min protein/100g" class="filter-input" />
+
+    <p-button label="Apply" icon="pi pi-check" [outlined]="true" (onClick)="applyFilters()" styleClass="gold-button-soft" />
     <p-button
       label="Clear Filters"
       icon="pi pi-filter-slash"
@@ -47,9 +38,13 @@
     <p-table
       [value]="foods()"
       [loading]="loading()"
+      [lazy]="true"
       [paginator]="true"
-      [rows]="10"
-      [rowsPerPageOptions]="[5, 10, 20]"
+      [rows]="limit()"
+      [first]="(page() - 1) * limit()"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [totalRecords]="totalRecords()"
+      (onPage)="onPageChange($event)"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} foods"
       styleClass="gold-table"

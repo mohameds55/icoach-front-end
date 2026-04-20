@@ -21,7 +21,7 @@ export class LoginComponent {
   errorMessage = signal('');
 
   loginForm = this.fb.group({
-    emailOrUsername: ['', [Validators.required, Validators.email]],
+    emailOrUsername: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     remember: [false],
   });
