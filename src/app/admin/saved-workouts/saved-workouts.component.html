@@ -7,6 +7,8 @@
     <p-table
       [value]="savedWorkouts()"
       [loading]="loading()"
+      [scrollable]="true"
+      [tableStyle]="{ 'min-width': '48rem' }"
       [paginator]="true"
       [rows]="10"
       [rowsPerPageOptions]="[5, 10, 20]"

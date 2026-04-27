@@ -1,8 +1,26 @@
 :host {
 	display: block;
+	min-width: 0;
+}
+
+:host .gold-page {
+	min-width: 0;
 }
 
 :host ::ng-deep .p-select {
 	border-color: var(--border-soft);
 	background: #f8f1e4;
+}
+
+:host ::ng-deep .workout-table-card {
+	overflow: hidden;
+}
+
+:host ::ng-deep .gold-table.p-datatable {
+	max-width: 100%;
+}
+
+:host ::ng-deep .gold-table .p-datatable-wrapper,
+:host ::ng-deep .gold-table .p-datatable-table-container {
+	overflow-x: auto;
 }

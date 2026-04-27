@@ -64,9 +64,15 @@ export class FoodsComponent implements OnInit {
 
     this.foodsService.getFoods(params).subscribe({
       next: (response) => {
-        const { foods, total } = this.mapFoodsResponse(response);
+        const { foods, total, page, limit } = this.mapFoodsResponse(response);
         this.foods.set(foods);
         this.totalRecords.set(total);
+        if (page != null) {
+          this.page.set(page);
+        }
+        if (limit != null) {
+          this.limit.set(limit);
+        }
         this.loading.set(false);
       },
       error: () => {
@@ -97,20 +103,34 @@ export class FoodsComponent implements OnInit {
   }
 
   onPageChange(event: PageEvent) {
-    const page = Math.floor(event.first / event.rows) + 1;
+    const pageSizeChanged = event.rows !== this.limit();
+    const page = pageSizeChanged ? 1 : Math.floor(event.first / event.rows) + 1;
     this.page.set(page);
     this.limit.set(event.rows);
     this.loadFoods({ page, limit: event.rows });
   }
 
-  private mapFoodsResponse(response: Food[] | FoodsPaginatedResponse): { foods: Food[]; total: number } {
+  private mapFoodsResponse(response: Food[] | FoodsPaginatedResponse): {
+    foods: Food[];
+    total: number;
+    page?: number;
+    limit?: number;
+  } {
     if (Array.isArray(response)) {
       return { foods: response, total: response.length };
     }
 
     const foods = response.foods ?? response.data ?? response.items ?? [];
-    const total = response.total ?? response.totalCount ?? foods.length;
-    return { foods, total };
+    const total =
+      response.pagination?.totalItems ??
+      response.pagination?.total ??
+      response.total ??
+      response.totalCount ??
+      foods.length;
+    const page = response.pagination?.currentPage ?? response.pagination?.page ?? response.page;
+    const limit = response.pagination?.itemsPerPage ?? response.pagination?.limit ?? response.limit;
+
+    return { foods, total, page, limit };
   }
 
   createFood() {

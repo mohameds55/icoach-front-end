@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { UsersService, User } from '../../core/services/users.service';
+import { UsersService, User, UsersPaginatedResponse } from '../../core/services/users.service';
 import { WorkoutsService } from '../../core/services/workouts.service';
 import { FoodsService } from '../../core/services/foods.service';
 import { SavedWorkoutsService } from '../../core/services/saved-workouts.service';
@@ -96,12 +96,21 @@ export class DashboardComponent implements OnInit {
 
   private loadUsers() {
     this.usersService.getUsers().subscribe({
-      next: (users) => {
+      next: (response) => {
+        const users = this.mapUsersResponse(response);
         this.users.set(users);
         this.usersLoading.set(false);
       },
       error: () => this.usersLoading.set(false),
     });
+  }
+
+  private mapUsersResponse(response: User[] | UsersPaginatedResponse): User[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    return response.users ?? response.data ?? response.items ?? [];
   }
 
   private buildPath(points: number[], width: number, height: number, fill: boolean): string {

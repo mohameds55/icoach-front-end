@@ -38,6 +38,8 @@
     <p-table
       [value]="foods()"
       [loading]="loading()"
+      [scrollable]="true"
+      [tableStyle]="{ 'min-width': '62rem' }"
       [lazy]="true"
       [paginator]="true"
       [rows]="limit()"

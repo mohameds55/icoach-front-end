@@ -24,6 +24,8 @@ export interface FoodsQueryParams {
 }
 
 export interface FoodsPaginatedResponse {
+  success?: boolean;
+  message?: string;
   foods?: Food[];
   data?: Food[];
   items?: Food[];
@@ -31,6 +33,18 @@ export interface FoodsPaginatedResponse {
   totalCount?: number;
   page?: number;
   limit?: number;
+  pagination?: {
+    currentPage?: number;
+    totalPages?: number;
+    totalItems?: number;
+    itemsPerPage?: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
+    page?: number;
+    limit?: number;
+    total?: number;
+    pages?: number;
+  };
 }
 
 @Injectable({
