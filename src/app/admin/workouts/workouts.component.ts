@@ -1,9 +1,18 @@
-import { Component, OnInit, signal, inject } from '@angular/core';import { FormsModule } from '@angular/forms';import { DatePipe } from '@angular/common';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { DialogModule } from 'primeng/dialog';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import {
   WorkoutsService,
   Workout,
@@ -25,12 +34,31 @@ interface PageEvent {
 
 @Component({
   selector: 'app-workouts',
-  imports: [TableModule, ButtonModule, CardModule, SelectModule, TooltipModule, FormsModule, DatePipe],
+  imports: [
+    TableModule,
+    ButtonModule,
+    CardModule,
+    SelectModule,
+    TooltipModule,
+    InputTextModule,
+    TextareaModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe,
+    DialogModule,
+    ToastModule,
+    ConfirmDialogModule,
+  ],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './workouts.component.html',
   styleUrl: './workouts.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkoutsComponent implements OnInit {
   private workoutsService = inject(WorkoutsService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
+  private fb = inject(FormBuilder);
 
   workouts = signal<Workout[]>([]);
   bodyPartOptions = signal<SelectOption[]>([]);
@@ -46,6 +74,29 @@ export class WorkoutsComponent implements OnInit {
   selectedTargetArea: string | null = null;
   selectedEquipment: string | null = null;
   selectedLevel: string | null = null;
+
+  dialogVisible = signal(false);
+  dialogMode = signal<'create' | 'edit'>('create');
+  saving = signal(false);
+  selectedWorkout = signal<Workout | null>(null);
+
+  gifFile = signal<File | null>(null);
+  gifPreviewUrl = signal<string | null>(null);
+
+  readonly levelSelectOptions: SelectOption[] = [
+    { label: 'Beginner', value: 'beginner' },
+    { label: 'Intermediate', value: 'intermediate' },
+    { label: 'Advanced', value: 'advanced' },
+  ];
+
+  form = this.fb.group({
+    name: ['', Validators.required],
+    body_part: ['', Validators.required],
+    target_area: ['', Validators.required],
+    equipment: ['', Validators.required],
+    level: ['', Validators.required],
+    description: [''],
+  });
 
   ngOnInit() {
     this.loadWorkouts();
@@ -68,12 +119,8 @@ export class WorkoutsComponent implements OnInit {
         const { workouts, total, page, limit } = this.mapWorkoutsResponse(response);
         this.workouts.set(workouts);
         this.totalRecords.set(total);
-        if (page != null) {
-          this.page.set(page);
-        }
-        if (limit != null) {
-          this.limit.set(limit);
-        }
+        if (page != null) this.page.set(page);
+        if (limit != null) this.limit.set(limit);
         this.loading.set(false);
       },
       error: () => {
@@ -121,6 +168,159 @@ export class WorkoutsComponent implements OnInit {
     this.loadWorkouts({ page, limit: event.rows });
   }
 
+  openCreateDialog() {
+    this.dialogMode.set('create');
+    this.selectedWorkout.set(null);
+    this.gifFile.set(null);
+    this.gifPreviewUrl.set(null);
+    this.form.reset();
+    this.dialogVisible.set(true);
+  }
+
+  editWorkout(workout: Workout) {
+    this.dialogMode.set('edit');
+    this.selectedWorkout.set(workout);
+    this.gifFile.set(null);
+    this.gifPreviewUrl.set(workout.gif ?? null);
+    this.form.reset({
+      name: workout.name,
+      body_part: workout.body_part ?? '',
+      target_area: workout.target_area ?? '',
+      equipment: workout.equipment ?? '',
+      level: workout.level ?? '',
+      description: workout.description ?? '',
+    });
+    this.dialogVisible.set(true);
+  }
+
+  onGifSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'image/gif') {
+      this.messageService.add({ severity: 'error', summary: 'Invalid File', detail: 'Only GIF files are allowed.' });
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 7 * 1024 * 1024) {
+      this.messageService.add({ severity: 'error', summary: 'File Too Large', detail: 'GIF must be under 7MB.' });
+      input.value = '';
+      return;
+    }
+
+    this.gifFile.set(file);
+    this.gifPreviewUrl.set(URL.createObjectURL(file));
+  }
+
+  saveWorkout() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (this.dialogMode() === 'create' && !this.gifFile()) {
+      this.messageService.add({ severity: 'error', summary: 'GIF Required', detail: 'Please upload a GIF file.' });
+      return;
+    }
+
+    this.saving.set(true);
+    const value = this.form.getRawValue();
+
+    const fd = new FormData();
+    fd.append('name', value.name!);
+    fd.append('body_part', value.body_part!);
+    fd.append('target_area', value.target_area!);
+    fd.append('equipment', value.equipment!);
+    fd.append('level', value.level!);
+    if (value.description) fd.append('description', value.description);
+    if (this.gifFile()) fd.append('gif', this.gifFile()!);
+
+    if (this.dialogMode() === 'create') {
+      this.workoutsService.createWorkout(fd).subscribe({
+        next: (workout) => {
+          const normalized = this.normalizeWorkout(workout);
+          this.workouts.update((workouts) => [normalized, ...workouts]);
+          this.totalRecords.update((t) => t + 1);
+          this.dialogVisible.set(false);
+          this.saving.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Workout Created',
+            detail: `${normalized.name} has been created successfully.`,
+          });
+        },
+        error: () => {
+          this.saving.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to create workout. Please try again.',
+          });
+        },
+      });
+    } else {
+      const workout = this.selectedWorkout()!;
+      this.workoutsService.updateWorkout(String(workout.id), fd).subscribe({
+        next: (updated) => {
+          const normalized = this.normalizeWorkout(updated);
+          this.workouts.update((workouts) =>
+            workouts.map((w) => String(w.id) === String(normalized.id) ? normalized : w),
+          );
+          this.dialogVisible.set(false);
+          this.saving.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Workout Updated',
+            detail: `${normalized.name} has been updated successfully.`,
+          });
+        },
+        error: () => {
+          this.saving.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update workout. Please try again.',
+          });
+        },
+      });
+    }
+  }
+
+  deleteWorkout(workout: Workout) {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete "${workout.name}"? This action cannot be undone.`,
+      header: 'Delete Workout',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.workoutsService.deleteWorkout(String(workout.id)).subscribe({
+          next: () => {
+            this.workouts.update((workouts) =>
+              workouts.filter((w) => String(w.id) !== String(workout.id)),
+            );
+            this.totalRecords.update((t) => Math.max(0, t - 1));
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Deleted',
+              detail: `${workout.name} has been deleted.`,
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to delete workout. Please try again.',
+            });
+          },
+        });
+      },
+    });
+  }
+
   private setFilterOptions(filters: WorkoutsFiltersResponse) {
     this.bodyPartOptions.set(this.mapOptions(filters.bodyParts));
     this.targetAreaOptions.set(this.mapOptions(filters.targetAreas));
@@ -134,7 +334,6 @@ export class WorkoutsComponent implements OnInit {
     if ('data' in response && response.data) {
       return response.data;
     }
-
     return response as WorkoutsFiltersResponse;
   }
 
@@ -164,40 +363,18 @@ export class WorkoutsComponent implements OnInit {
   }
 
   private normalizeWorkout(workout: Workout): Workout {
-    const targetArea =
-      workout.targetArea ??
-      workout.target_area ??
-      (Array.isArray(workout.targetAreas) ? workout.targetAreas.join(', ') : null);
-
     return {
       ...workout,
-      targetArea: targetArea || 'N/A',
-      equipment: workout.equipment ?? 'N/A',
+      target_area: workout.target_area || 'N/A',
+      equipment: workout.equipment || 'N/A',
     };
   }
 
   private mapOptions(values?: Array<string | null>): SelectOption[] {
-    if (!values?.length) {
-      return [];
-    }
+    if (!values?.length) return [];
 
     return values
       .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-      .map((value) => ({
-        label: value,
-        value,
-      }));
-  }
-
-  createWorkout() {
-    console.log('Create workout');
-  }
-
-  editWorkout(workout: Workout) {
-    console.log('Edit workout:', workout);
-  }
-
-  deleteWorkout(workout: Workout) {
-    console.log('Delete workout:', workout);
+      .map((value) => ({ label: value, value }));
   }
 }

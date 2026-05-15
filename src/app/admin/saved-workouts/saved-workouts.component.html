@@ -1,9 +1,15 @@
-<div class="space-y-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0">Saved Workouts</h2>
+<p-toast />
+<p-confirmDialog />
+
+<section class="gold-page">
+  <div class="gold-header">
+    <div>
+      <h2 class="gold-header-title">Saved Workout Plans</h2>
+      <p class="gold-header-subtitle">Review and manage users' saved workout plans.</p>
+    </div>
   </div>
 
-  <p-card class="rounded-xl shadow-sm">
+  <p-card class="gold-card">
     <p-table
       [value]="savedWorkouts()"
       [loading]="loading()"
@@ -14,20 +20,14 @@
       [rowsPerPageOptions]="[5, 10, 20]"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} saved workouts"
-      styleClass="p-datatable-striped"
+      class="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="workoutName">
-            Workout Name <p-sortIcon field="workoutName" />
-          </th>
-          <th pSortableColumn="userId">
-            User ID <p-sortIcon field="userId" />
-          </th>
+          <th pSortableColumn="workoutName">Workout Name <p-sortIcon field="workoutName" /></th>
+          <th pSortableColumn="userId">User ID <p-sortIcon field="userId" /></th>
           <th>Notes</th>
-          <th pSortableColumn="savedAt">
-            Saved At <p-sortIcon field="savedAt" />
-          </th>
+          <th pSortableColumn="savedAt">Saved At <p-sortIcon field="savedAt" /></th>
           <th>Actions</th>
         </tr>
       </ng-template>
@@ -36,9 +36,7 @@
           <td>{{ savedWorkout.workoutName }}</td>
           <td>{{ savedWorkout.userId }}</td>
           <td>
-            <div class="max-w-xs truncate">
-              {{ savedWorkout.notes || '-' }}
-            </div>
+            <div class="max-w-xs truncate">{{ savedWorkout.notes || '-' }}</div>
           </td>
           <td>{{ savedWorkout.savedAt | date: 'short' }}</td>
           <td>
@@ -48,6 +46,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="info"
+                pTooltip="View Details"
                 (onClick)="viewSavedWorkout(savedWorkout)"
               />
               <p-button
@@ -55,6 +54,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="danger"
+                pTooltip="Remove"
                 (onClick)="deleteSavedWorkout(savedWorkout)"
               />
             </div>
@@ -63,11 +63,54 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="5" class="text-center py-8 text-surface-500">
-            No saved workouts found
-          </td>
+          <td colspan="5" class="text-center py-8 text-surface-500">No saved workouts found</td>
         </tr>
       </ng-template>
     </p-table>
   </p-card>
-</div>
+</section>
+
+<!-- View Details Dialog -->
+<p-dialog
+  [visible]="viewDialogVisible()"
+  (visibleChange)="viewDialogVisible.set($event)"
+  header="Saved Workout Details"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+>
+  @if (selectedWorkout(); as workout) {
+    <div class="flex flex-col gap-3 pt-2">
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Workout Name</span>
+        <span class="font-semibold">{{ workout.workoutName }}</span>
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">User ID</span>
+        <span class="font-semibold font-mono text-sm">{{ workout.userId }}</span>
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Workout ID</span>
+        <span class="font-semibold font-mono text-sm">{{ workout.workoutId }}</span>
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Saved At</span>
+        <span class="font-semibold">{{ workout.savedAt | date: 'medium' }}</span>
+      </div>
+      @if (workout.notes) {
+        <div class="flex flex-col gap-1">
+          <span class="text-sm text-surface-500">Notes</span>
+          <span class="font-semibold">{{ workout.notes }}</span>
+        </div>
+      }
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Close"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="viewDialogVisible.set(false)"
+    />
+  </ng-template>
+</p-dialog>

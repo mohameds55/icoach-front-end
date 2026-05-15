@@ -8,9 +8,10 @@ export interface Food {
   name: string;
   calories: number;
   protein: number;
-  carbs: number;
+  carbohydrate: number;
   fat: number;
-  category: string;
+  sugar?: number;
+  foodImage?: string;
   createdAt: string;
 }
 
@@ -57,29 +58,12 @@ export class FoodsService {
   getFoods(params?: FoodsQueryParams): Observable<Food[] | FoodsPaginatedResponse> {
     let httpParams = new HttpParams();
 
-    if (params?.page != null) {
-      httpParams = httpParams.set('page', String(params.page));
-    }
-
-    if (params?.limit != null) {
-      httpParams = httpParams.set('limit', String(params.limit));
-    }
-
-    if (params?.search) {
-      httpParams = httpParams.set('search', params.search.trim());
-    }
-
-    if (params?.minCalories != null) {
-      httpParams = httpParams.set('minCalories', String(params.minCalories));
-    }
-
-    if (params?.maxCalories != null) {
-      httpParams = httpParams.set('maxCalories', String(params.maxCalories));
-    }
-
-    if (params?.minProtein != null) {
-      httpParams = httpParams.set('minProtein', String(params.minProtein));
-    }
+    if (params?.page != null) httpParams = httpParams.set('page', String(params.page));
+    if (params?.limit != null) httpParams = httpParams.set('limit', String(params.limit));
+    if (params?.search) httpParams = httpParams.set('search', params.search.trim());
+    if (params?.minCalories != null) httpParams = httpParams.set('minCalories', String(params.minCalories));
+    if (params?.maxCalories != null) httpParams = httpParams.set('maxCalories', String(params.maxCalories));
+    if (params?.minProtein != null) httpParams = httpParams.set('minProtein', String(params.minProtein));
 
     return this.http.get<Food[] | FoodsPaginatedResponse>(this.apiUrl, { params: httpParams });
   }
@@ -88,28 +72,16 @@ export class FoodsService {
     return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
   }
 
-  searchFoods(query: string): Observable<Food[]> {
-    return this.http.get<Food[]>(`${this.apiUrl}/search?q=${query}`);
-  }
-
-  getHighProteinFoods(): Observable<Food[]> {
-    return this.http.get<Food[]>(`${this.apiUrl}/high-protein`);
-  }
-
-  getLowCalorieFoods(): Observable<Food[]> {
-    return this.http.get<Food[]>(`${this.apiUrl}/low-calorie`);
-  }
-
   getFood(id: string): Observable<Food> {
     return this.http.get<Food>(`${this.apiUrl}/${id}`);
   }
 
-  createFood(food: Partial<Food>): Observable<Food> {
-    return this.http.post<Food>(this.apiUrl, food);
+  createFood(data: FormData): Observable<Food> {
+    return this.http.post<Food>(this.apiUrl, data);
   }
 
-  updateFood(id: string, food: Partial<Food>): Observable<Food> {
-    return this.http.put<Food>(`${this.apiUrl}/${id}`, food);
+  updateFood(id: string, data: FormData): Observable<Food> {
+    return this.http.put<Food>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteFood(id: string): Observable<void> {

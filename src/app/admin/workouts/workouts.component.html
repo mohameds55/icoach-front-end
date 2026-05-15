@@ -1,3 +1,6 @@
+<p-toast />
+<p-confirmDialog />
+
 <section class="gold-page">
   <div class="gold-header">
     <div>
@@ -7,8 +10,8 @@
     <p-button
       label="Create Workout"
       icon="pi pi-plus"
-      (onClick)="createWorkout()"
-      styleClass="gold-button"
+      class="gold-button"
+      (onClick)="openCreateDialog()"
     />
   </div>
 
@@ -57,12 +60,12 @@
     <span class="gold-chip">Program Filters</span>
   </div>
 
-  <p-card styleClass="gold-card workout-table-card">
+  <p-card class="gold-card workout-table-card">
     <p-table
       [value]="workouts()"
       [loading]="loading()"
       [scrollable]="true"
-      [tableStyle]="{ 'min-width': '74rem' }"
+      [tableStyle]="{ 'min-width': '68rem' }"
       [lazy]="true"
       [paginator]="true"
       [rows]="limit()"
@@ -72,34 +75,38 @@
       (onPage)="onPageChange($event)"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} workouts"
-      styleClass="gold-table"
+      class="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
+          <th>GIF</th>
           <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
           <th>Description</th>
-          <th pSortableColumn="difficulty">Difficulty <p-sortIcon field="difficulty" /></th>
-          <th pSortableColumn="duration">Duration (min) <p-sortIcon field="duration" /></th>
-          <th pSortableColumn="targetArea">Target Area <p-sortIcon field="targetArea" /></th>
+          <th pSortableColumn="body_part">Body Part <p-sortIcon field="body_part" /></th>
+          <th pSortableColumn="target_area">Target Area <p-sortIcon field="target_area" /></th>
           <th pSortableColumn="equipment">Equipment <p-sortIcon field="equipment" /></th>
-          <th pSortableColumn="category">Category <p-sortIcon field="category" /></th>
+          <th pSortableColumn="level">Level <p-sortIcon field="level" /></th>
           <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt" /></th>
           <th>Actions</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-workout>
         <tr>
+          <td>
+            @if (workout.gif) {
+              <img [src]="workout.gif" alt="GIF" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" />
+            } @else {
+              <span class="text-surface-400 text-xs">—</span>
+            }
+          </td>
           <td>{{ workout.name }}</td>
           <td>
             <div class="max-w-xs truncate">{{ workout.description }}</div>
           </td>
-          <td>
-            <span class="capitalize">{{ workout.difficulty }}</span>
-          </td>
-          <td>{{ workout.duration }}</td>
-          <td>{{ workout.targetArea }}</td>
+          <td><span class="capitalize">{{ workout.body_part }}</span></td>
+          <td>{{ workout.target_area }}</td>
           <td>{{ workout.equipment }}</td>
-          <td>{{ workout.category }}</td>
+          <td><span class="capitalize">{{ workout.level }}</span></td>
           <td>{{ workout.createdAt | date: 'short' }}</td>
           <td>
             <div class="flex gap-2">
@@ -108,6 +115,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="secondary"
+                pTooltip="Edit"
                 (onClick)="editWorkout(workout)"
               />
               <p-button
@@ -115,6 +123,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="danger"
+                pTooltip="Delete"
                 (onClick)="deleteWorkout(workout)"
               />
             </div>
@@ -129,3 +138,126 @@
     </p-table>
   </p-card>
 </section>
+
+<!-- Create / Edit Dialog -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [header]="dialogMode() === 'create' ? 'Create Workout' : 'Edit Workout'"
+  [modal]="true"
+  [style]="{ width: '42rem' }"
+  [draggable]="false"
+>
+  <form [formGroup]="form" class="grid grid-cols-2 gap-4 pt-2">
+
+    <!-- GIF Upload -->
+    <div class="flex flex-col gap-2 col-span-2">
+      <label class="font-semibold text-sm">
+        GIF
+        @if (dialogMode() === 'create') {
+          <span class="text-red-500">*</span>
+        } @else {
+          <span class="text-surface-400 font-normal text-xs">(leave blank to keep current)</span>
+        }
+      </label>
+      <div class="flex items-center gap-4">
+        @if (gifPreviewUrl()) {
+          <img [src]="gifPreviewUrl()!" alt="Preview" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--p-surface-200);" />
+        }
+        <label
+          class="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-surface-300 cursor-pointer text-sm text-surface-500 hover:border-primary transition-colors"
+        >
+          <i class="pi pi-upload"></i>
+          {{ gifPreviewUrl() ? 'Change GIF' : 'Upload GIF' }}
+          <input
+            type="file"
+            accept="image/gif"
+            class="hidden"
+            (change)="onGifSelect($event)"
+          />
+        </label>
+        <span class="text-xs text-surface-400">GIF only · max 7MB</span>
+      </div>
+    </div>
+
+    <!-- Name -->
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="font-semibold text-sm">Name <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="name" placeholder="e.g. Incline Barbell Press" class="w-full" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <small class="text-red-500">Name is required.</small>
+      }
+    </div>
+
+    <!-- Body Part -->
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Body Part <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="body_part" placeholder="e.g. chest" class="w-full" />
+      @if (form.get('body_part')?.invalid && form.get('body_part')?.touched) {
+        <small class="text-red-500">Body part is required.</small>
+      }
+    </div>
+
+    <!-- Target Area -->
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Target Area <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="target_area" placeholder="e.g. upper chest" class="w-full" />
+      @if (form.get('target_area')?.invalid && form.get('target_area')?.touched) {
+        <small class="text-red-500">Target area is required.</small>
+      }
+    </div>
+
+    <!-- Equipment -->
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Equipment <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="equipment" placeholder="e.g. barbell" class="w-full" />
+      @if (form.get('equipment')?.invalid && form.get('equipment')?.touched) {
+        <small class="text-red-500">Equipment is required.</small>
+      }
+    </div>
+
+    <!-- Level -->
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Level <span class="text-red-500">*</span></label>
+      <p-select
+        formControlName="level"
+        [options]="levelSelectOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select level"
+        class="w-full"
+      />
+      @if (form.get('level')?.invalid && form.get('level')?.touched) {
+        <small class="text-red-500">Level is required.</small>
+      }
+    </div>
+
+    <!-- Description -->
+    <div class="flex flex-col gap-1 col-span-2">
+      <label class="font-semibold text-sm">Description</label>
+      <textarea
+        pTextarea
+        formControlName="description"
+        rows="3"
+        placeholder="Detailed description of the exercise..."
+        class="w-full resize-none"
+      ></textarea>
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="dialogVisible.set(false)"
+    />
+    <p-button
+      [label]="dialogMode() === 'create' ? 'Create Workout' : 'Save Changes'"
+      class="gold-button"
+      [loading]="saving()"
+      (onClick)="saveWorkout()"
+    />
+  </ng-template>
+</p-dialog>

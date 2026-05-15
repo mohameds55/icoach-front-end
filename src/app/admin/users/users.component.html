@@ -1,13 +1,15 @@
+<p-toast />
+<p-confirmDialog />
+
 <section class="gold-page">
   <div class="gold-header">
     <div>
       <h2 class="gold-header-title">User Management</h2>
       <p class="gold-header-subtitle">Manage admins and coaching accounts with confidence.</p>
     </div>
-    <p-button label="Add User" icon="pi pi-plus" styleClass="gold-button" />
   </div>
 
-  <p-card styleClass="gold-card">
+  <p-card class="gold-card">
     <p-table
       [value]="users()"
       [loading]="loading()"
@@ -22,23 +24,16 @@
       (onPage)="onPageChange($event)"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
-      styleClass="gold-table"
+      class="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="name">
-            Name <p-sortIcon field="name" />
-          </th>
-          <th pSortableColumn="email">
-            Email <p-sortIcon field="email" />
-          </th>
-          <th pSortableColumn="role">
-            Role <p-sortIcon field="role" />
-          </th>
-          <th>Status</th>
-          <th pSortableColumn="createdAt">
-            Created At <p-sortIcon field="createdAt" />
-          </th>
+          <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
+          <th pSortableColumn="email">Email <p-sortIcon field="email" /></th>
+          <th pSortableColumn="role">Role <p-sortIcon field="role" /></th>
+          <th>Active</th>
+          <th>Verified</th>
+          <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt" /></th>
           <th>Actions</th>
         </tr>
       </ng-template>
@@ -46,8 +41,12 @@
         <tr>
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
+          <td><span class="capitalize">{{ user.role }}</span></td>
           <td>
-            <span class="capitalize">{{ user.role }}</span>
+            <p-tag
+              [value]="user.isActive ? 'Active' : 'Inactive'"
+              [severity]="user.isActive ? 'success' : 'danger'"
+            />
           </td>
           <td>
             <p-tag
@@ -63,6 +62,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="info"
+                pTooltip="View"
                 (onClick)="viewUser(user)"
               />
               <p-button
@@ -70,6 +70,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="secondary"
+                pTooltip="Edit"
                 (onClick)="editUser(user)"
               />
               <p-button
@@ -77,6 +78,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="danger"
+                pTooltip="Delete"
                 (onClick)="deleteUser(user)"
               />
             </div>
@@ -85,11 +87,140 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="text-center py-8 text-surface-500">
-            No users found
-          </td>
+          <td colspan="7" class="text-center py-8 text-surface-500">No users found</td>
         </tr>
       </ng-template>
     </p-table>
   </p-card>
 </section>
+
+<!-- Edit Dialog -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  header="Edit User"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+>
+  <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Name <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="name" placeholder="Full name" class="w-full" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <small class="text-red-500">Name is required.</small>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Email <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="email" type="email" placeholder="email@example.com" class="w-full" />
+      @if (form.get('email')?.invalid && form.get('email')?.touched) {
+        <small class="text-red-500">Valid email is required.</small>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Role <span class="text-red-500">*</span></label>
+      <p-select
+        formControlName="role"
+        [options]="roleOptions"
+        optionLabel="label"
+        optionValue="value"
+        class="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">
+        Password
+        <span class="text-surface-400 font-normal text-xs">(leave blank to keep current)</span>
+      </label>
+      <input pInputText type="password" formControlName="password" placeholder="••••••••" class="w-full" />
+    </div>
+
+    <div class="flex items-center gap-2">
+      <p-checkbox formControlName="isVerified" [binary]="true" inputId="isVerified" />
+      <label for="isVerified" class="text-sm font-semibold cursor-pointer">Email Verified</label>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <p-checkbox formControlName="isActive" [binary]="true" inputId="isActive" />
+      <label for="isActive" class="text-sm font-semibold cursor-pointer">Active Account</label>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="dialogVisible.set(false)"
+    />
+    <p-button
+      label="Save Changes"
+      class="gold-button"
+      [loading]="saving()"
+      (onClick)="saveUser()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- View Dialog -->
+<p-dialog
+  [visible]="viewDialogVisible()"
+  (visibleChange)="viewDialogVisible.set($event)"
+  header="User Details"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+>
+  @if (selectedUser(); as user) {
+    <div class="flex flex-col gap-3 pt-2">
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Name</span>
+        <span class="font-semibold">{{ user.name }}</span>
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Email</span>
+        <span class="font-semibold">{{ user.email }}</span>
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Role</span>
+        <span class="capitalize font-semibold">{{ user.role }}</span>
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Active</span>
+        <p-tag
+          [value]="user.isActive ? 'Active' : 'Inactive'"
+          [severity]="user.isActive ? 'success' : 'danger'"
+        />
+      </div>
+      <div class="flex justify-between border-b border-surface-100 pb-2">
+        <span class="text-sm text-surface-500">Verified</span>
+        <p-tag
+          [value]="user.isVerified ? 'Verified' : 'Unverified'"
+          [severity]="user.isVerified ? 'success' : 'warn'"
+        />
+      </div>
+      <div class="flex justify-between">
+        <span class="text-sm text-surface-500">Created At</span>
+        <span class="font-semibold">{{ user.createdAt | date: 'medium' }}</span>
+      </div>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Close"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="viewDialogVisible.set(false)"
+    />
+    <p-button
+      label="Edit"
+      icon="pi pi-pencil"
+      severity="secondary"
+      (onClick)="viewDialogVisible.set(false); editUser(selectedUser()!)"
+    />
+  </ng-template>
+</p-dialog>

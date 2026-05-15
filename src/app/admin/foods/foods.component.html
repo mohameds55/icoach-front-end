@@ -1,15 +1,18 @@
+<p-toast />
+<p-confirmDialog />
+
 <section class="gold-page">
   <div class="gold-header">
     <div>
       <h2 class="gold-header-title">Food Management</h2>
       <p class="gold-header-subtitle">Track nutrition entries with clean and searchable data.</p>
     </div>
-    <p-button label="Create Food" icon="pi pi-plus" (onClick)="createFood()" styleClass="gold-button" />
+    <p-button label="Create Food" icon="pi pi-plus" class="gold-button" (onClick)="openCreateDialog()" />
   </div>
 
   <div class="gold-toolbar">
     <p-iconField iconPosition="left" class="w-full md:w-96">
-      <p-inputIcon styleClass="pi pi-search" />
+      <p-inputIcon class="pi pi-search" />
       <input
         type="text"
         pInputText
@@ -24,22 +27,22 @@
     <input type="number" pInputText [(ngModel)]="maxCalories" placeholder="Max calories/100g" class="filter-input" />
     <input type="number" pInputText [(ngModel)]="minProtein" placeholder="Min protein/100g" class="filter-input" />
 
-    <p-button label="Apply" icon="pi pi-check" [outlined]="true" (onClick)="applyFilters()" styleClass="gold-button-soft" />
+    <p-button label="Apply" icon="pi pi-check" [outlined]="true" (onClick)="applyFilters()" class="gold-button-soft" />
     <p-button
       label="Clear Filters"
       icon="pi pi-filter-slash"
       [text]="true"
       (onClick)="clearFilters()"
-      styleClass="gold-button-soft"
+      class="gold-button-soft"
     />
   </div>
 
-  <p-card styleClass="gold-card">
+  <p-card class="gold-card">
     <p-table
       [value]="foods()"
       [loading]="loading()"
       [scrollable]="true"
-      [tableStyle]="{ 'min-width': '62rem' }"
+      [tableStyle]="{ 'min-width': '68rem' }"
       [lazy]="true"
       [paginator]="true"
       [rows]="limit()"
@@ -49,39 +52,35 @@
       (onPage)="onPageChange($event)"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} foods"
-      styleClass="gold-table"
+      class="gold-table"
     >
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="name">
-            Name <p-sortIcon field="name" />
-          </th>
-          <th pSortableColumn="calories">
-            Calories <p-sortIcon field="calories" />
-          </th>
-          <th pSortableColumn="protein">
-            Protein (g) <p-sortIcon field="protein" />
-          </th>
-          <th pSortableColumn="carbs">
-            Carbs (g) <p-sortIcon field="carbs" />
-          </th>
-          <th pSortableColumn="fat">
-            Fat (g) <p-sortIcon field="fat" />
-          </th>
-          <th pSortableColumn="category">
-            Category <p-sortIcon field="category" />
-          </th>
+          <th>Image</th>
+          <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
+          <th pSortableColumn="calories">Calories <p-sortIcon field="calories" /></th>
+          <th pSortableColumn="protein">Protein (g) <p-sortIcon field="protein" /></th>
+          <th pSortableColumn="carbohydrate">Carbs (g) <p-sortIcon field="carbohydrate" /></th>
+          <th pSortableColumn="fat">Fat (g) <p-sortIcon field="fat" /></th>
+          <th pSortableColumn="sugar">Sugar (g) <p-sortIcon field="sugar" /></th>
           <th>Actions</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-food>
         <tr>
+          <td>
+            @if (food.foodImage) {
+              <img [src]="food.foodImage" [alt]="food.name" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+            } @else {
+              <span class="text-surface-400 text-xs">—</span>
+            }
+          </td>
           <td>{{ food.name }}</td>
           <td>{{ food.calories }}</td>
           <td>{{ food.protein }}</td>
-          <td>{{ food.carbs }}</td>
+          <td>{{ food.carbohydrate }}</td>
           <td>{{ food.fat }}</td>
-          <td>{{ food.category }}</td>
+          <td>{{ food.sugar ?? '—' }}</td>
           <td>
             <div class="flex gap-2">
               <p-button
@@ -89,6 +88,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="secondary"
+                pTooltip="Edit"
                 (onClick)="editFood(food)"
               />
               <p-button
@@ -96,6 +96,7 @@
                 [rounded]="true"
                 [text]="true"
                 severity="danger"
+                pTooltip="Delete"
                 (onClick)="deleteFood(food)"
               />
             </div>
@@ -104,11 +105,121 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="7" class="text-center py-8 text-surface-500">
-            No foods found
-          </td>
+          <td colspan="8" class="text-center py-8 text-surface-500">No foods found</td>
         </tr>
       </ng-template>
     </p-table>
   </p-card>
 </section>
+
+<!-- Create / Edit Dialog -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [header]="dialogMode() === 'create' ? 'Create Food' : 'Edit Food'"
+  [modal]="true"
+  [style]="{ width: '38rem' }"
+  [draggable]="false"
+>
+  <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
+
+    <!-- Image Upload -->
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-sm">
+        Food Image
+        <span class="text-surface-400 font-normal text-xs">(optional)</span>
+      </label>
+      <div class="flex items-center gap-4">
+        @if (imagePreviewUrl()) {
+          <img
+            [src]="imagePreviewUrl()!"
+            alt="Preview"
+            style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--p-surface-200);"
+          />
+        }
+        <label
+          class="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-surface-300 cursor-pointer text-sm text-surface-500 hover:border-primary transition-colors"
+        >
+          <i class="pi pi-upload"></i>
+          {{ imagePreviewUrl() ? 'Change Image' : 'Upload Image' }}
+          <input
+            type="file"
+            accept="image/*"
+            class="hidden"
+            (change)="onImageSelect($event)"
+          />
+        </label>
+      </div>
+    </div>
+
+    <!-- Name -->
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Name <span class="text-red-500">*</span></label>
+      <input pInputText formControlName="name" placeholder="e.g. grilled_chicken_breast" class="w-full" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <small class="text-red-500">Name is required.</small>
+      }
+    </div>
+
+    <!-- Calories -->
+    <div class="flex flex-col gap-1">
+      <label class="font-semibold text-sm">Calories (kcal / 100g) <span class="text-red-500">*</span></label>
+      <p-inputnumber formControlName="calories" [min]="0" [maxFractionDigits]="2" [fluid]="true" placeholder="e.g. 165" />
+      @if (form.get('calories')?.invalid && form.get('calories')?.touched) {
+        <small class="text-red-500">Valid calories required.</small>
+      }
+    </div>
+
+    <!-- Macros row 1: Protein + Carbohydrate -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="font-semibold text-sm">Protein (g / 100g) <span class="text-red-500">*</span></label>
+        <p-inputnumber formControlName="protein" [min]="0" [maxFractionDigits]="2" [fluid]="true" placeholder="e.g. 31" />
+        @if (form.get('protein')?.invalid && form.get('protein')?.touched) {
+          <small class="text-red-500">Required.</small>
+        }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-semibold text-sm">Carbohydrate (g / 100g) <span class="text-red-500">*</span></label>
+        <p-inputnumber formControlName="carbohydrate" [min]="0" [maxFractionDigits]="2" [fluid]="true" placeholder="e.g. 0" />
+        @if (form.get('carbohydrate')?.invalid && form.get('carbohydrate')?.touched) {
+          <small class="text-red-500">Required.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Macros row 2: Fat + Sugar -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="font-semibold text-sm">Fat (g / 100g) <span class="text-red-500">*</span></label>
+        <p-inputnumber formControlName="fat" [min]="0" [maxFractionDigits]="2" [fluid]="true" placeholder="e.g. 3.6" />
+        @if (form.get('fat')?.invalid && form.get('fat')?.touched) {
+          <small class="text-red-500">Required.</small>
+        }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-semibold text-sm">
+          Sugar (g / 100g)
+          <span class="text-surface-400 font-normal text-xs">(optional, defaults to 0)</span>
+        </label>
+        <p-inputnumber formControlName="sugar" [min]="0" [maxFractionDigits]="2" [fluid]="true" placeholder="e.g. 0" />
+      </div>
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="dialogVisible.set(false)"
+    />
+    <p-button
+      [label]="dialogMode() === 'create' ? 'Create Food' : 'Save Changes'"
+      class="gold-button"
+      [loading]="saving()"
+      (onClick)="saveFood()"
+    />
+  </ng-template>
+</p-dialog>

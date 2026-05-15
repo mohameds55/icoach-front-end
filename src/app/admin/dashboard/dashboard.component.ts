@@ -70,19 +70,29 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadStats();
-    this.loadUsers();
   }
 
   private loadStats() {
     forkJoin({
-      users: this.usersService.getUsersCount(),
+      users: this.usersService.getUsers(),
       workouts: this.workoutsService.getWorkoutsCount(),
       foods: this.foodsService.getFoodsCount(),
       savedWorkouts: this.savedWorkoutsService.getSavedWorkoutsCount(),
     }).subscribe({
       next: (r) => {
+        const userList = this.mapUsersResponse(r.users);
+        const usersTotal = Array.isArray(r.users)
+          ? r.users.length
+          : ((r.users as UsersPaginatedResponse).pagination?.total
+              ?? (r.users as UsersPaginatedResponse).total
+              ?? (r.users as UsersPaginatedResponse).totalCount
+              ?? userList.length);
+
+        this.users.set(userList);
+        this.usersLoading.set(false);
+
         this.statCards.set([
-          { title: 'Active Users', value: r.users.count.toLocaleString(), period: 'Week', description: 'Users active in the last 7 days', loading: false },
+          { title: 'Active Users', value: usersTotal.toLocaleString(), period: 'Week', description: 'Users active in the last 7 days', loading: false },
           { title: 'New Signups', value: r.savedWorkouts.count.toLocaleString(), period: 'Today', description: 'Admins & Coaches registered', loading: false },
           { title: 'Completed Workouts', value: r.workouts.count.toLocaleString(), period: 'Weekly', description: 'Logged by clients and coaches', loading: false },
           { title: 'Foods Tracked', value: r.foods.count.toLocaleString(), period: 'Weekly', description: 'Client nutrition tracking', loading: false },
@@ -90,18 +100,8 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.statCards.update(cards => cards.map(c => ({ ...c, loading: false })));
-      },
-    });
-  }
-
-  private loadUsers() {
-    this.usersService.getUsers().subscribe({
-      next: (response) => {
-        const users = this.mapUsersResponse(response);
-        this.users.set(users);
         this.usersLoading.set(false);
       },
-      error: () => this.usersLoading.set(false),
     });
   }
 
